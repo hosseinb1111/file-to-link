@@ -1,0 +1,17 @@
+{
+  "name": "fileshare",
+  "version": "1.0.0",
+  "description": "Batch file sharing on Cloudflare Workers using KV storage.",
+  "main": "worker.js",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "keywords": ["cloudflare", "workers", "kv", "file-sharing", "file-upload"],
+  "author": "Hossein Seyed Bagheri",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

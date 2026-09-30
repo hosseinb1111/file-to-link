@@ -1,0 +1,9 @@
+name = "fileshare"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+# Create the namespace with:  npx wrangler kv namespace create FILES
+# then paste the returned id below.
+[[kv_namespaces]]
+binding = "FILES"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
