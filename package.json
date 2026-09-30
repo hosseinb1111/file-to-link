@@ -1,5 +1,5 @@
 {
-  "name": "fileshare",
+  "name": "file-to-link",
   "version": "1.0.0",
   "description": "Batch file sharing on Cloudflare Workers using KV storage.",
   "main": "worker.js",
