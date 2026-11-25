@@ -959,27 +959,68 @@ const HTML_UPLOAD = `<!DOCTYPE html>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"><\/script>
+  <script>
+  (function () {
+    try {
+      var t = localStorage.getItem('fs_theme');
+      if (!t) t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+  </script>
   <style>
     :root {
       --bg: #0b0b10;
-      --glass: rgba(255,255,255,.035);
-      --glass-hv: rgba(255,255,255,.07);
+      --bg-glow1: rgba(16,185,129,.10);
+      --bg-glow2: rgba(167,139,250,.07);
+      --surface: #14141c;
+      --fill: rgba(255,255,255,.035);
+      --fill-hv: rgba(255,255,255,.07);
+      --fill-strong: rgba(255,255,255,.06);
+      --fill-input: rgba(255,255,255,.04);
       --ln: rgba(255,255,255,.08);
       --ln2: rgba(255,255,255,.14);
       --tx: #eceff5;
       --tx2: #9aa4b2;
       --tx3: #5f6a79;
       --ac: #10b981;
-      --ac2: #34d399;
+      --ac-txt: #34d399;
       --ac0: rgba(16,185,129,.07);
-      --ac1: rgba(16,185,129,.14);
+      --ac-ln: rgba(16,185,129,.25);
       --bl: #60a5fa;
       --vi: #a78bfa;
       --am: #fbbf24;
       --rd: #f87171;
       --rd1: rgba(248,113,113,.13);
+      --err-tx: #fca5a5;
       --sh: 0 1px 2px rgba(0,0,0,.4), 0 8px 26px rgba(0,0,0,.3);
       --e: cubic-bezier(.4,0,.2,1);
+    }
+    html[data-theme="light"] {
+      --bg: #f3f5f9;
+      --bg-glow1: rgba(5,150,105,.08);
+      --bg-glow2: rgba(124,58,237,.05);
+      --surface: #ffffff;
+      --fill: rgba(255,255,255,.8);
+      --fill-hv: rgba(255,255,255,.95);
+      --fill-strong: rgba(15,23,42,.05);
+      --fill-input: rgba(255,255,255,.9);
+      --ln: rgba(15,23,42,.09);
+      --ln2: rgba(15,23,42,.16);
+      --tx: #111826;
+      --tx2: #54606f;
+      --tx3: #828d9b;
+      --ac: #059669;
+      --ac-txt: #047857;
+      --ac0: rgba(5,150,105,.06);
+      --ac-ln: rgba(5,150,105,.28);
+      --bl: #2563eb;
+      --vi: #7c3aed;
+      --am: #b45309;
+      --rd: #dc2626;
+      --rd1: rgba(220,38,38,.10);
+      --err-tx: #b91c1c;
+      --sh: 0 1px 2px rgba(15,23,42,.05), 0 8px 24px rgba(15,23,42,.07);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -989,8 +1030,8 @@ const HTML_UPLOAD = `<!DOCTYPE html>
       color: var(--tx);
       background-color: var(--bg);
       background-image:
-        radial-gradient(circle at 92% -8%, rgba(16,185,129,.10), transparent 42%),
-        radial-gradient(circle at 4% 112%, rgba(167,139,250,.07), transparent 40%);
+        radial-gradient(circle at 92% -8%, var(--bg-glow1), transparent 42%),
+        radial-gradient(circle at 4% 112%, var(--bg-glow2), transparent 40%);
       min-height: 100vh;
       padding: 2rem 1.5rem;
       display: flex;
@@ -998,21 +1039,48 @@ const HTML_UPLOAD = `<!DOCTYPE html>
       align-items: center;
       justify-content: center;
       -webkit-font-smoothing: antialiased;
+      transition: background-color .4s var(--e), color .4s var(--e);
     }
     .container { width: 100%; max-width: 800px; }
     .card {
-      background: var(--glass);
+      position: relative;
+      background: var(--fill);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-radius: 14px;
       box-shadow: var(--sh);
       padding: 2.5rem;
       border: 1px solid var(--ln);
+      transition: background-color .4s var(--e), border-color .4s var(--e);
     }
+    .theme-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      border: 1px solid var(--ln);
+      background: var(--fill-strong);
+      color: var(--tx2);
+      cursor: pointer;
+      padding: 0;
+      transition: all .2s var(--e);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .theme-toggle:hover { color: var(--tx); background: var(--fill-hv); }
+    .theme-toggle:focus-visible { outline: 1.5px solid var(--ac); outline-offset: 2px; }
+    .theme-toggle svg { width: 18px; height: 18px; }
+    .theme-toggle .i-sun { display: none; }
+    html[data-theme="light"] .theme-toggle .i-sun { display: block; }
+    html[data-theme="light"] .theme-toggle .i-moon { display: none; }
     h1 {
       font-size: 1.9rem;
       margin-bottom: 0.5rem;
-      background: linear-gradient(135deg, #34d399, #60a5fa);
+      padding-right: 3rem;
+      background: linear-gradient(135deg, #10b981, #3b82f6);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
@@ -1029,13 +1097,13 @@ const HTML_UPLOAD = `<!DOCTYPE html>
       cursor: pointer;
       transition: all 0.3s var(--e);
       margin-bottom: 2rem;
-      background: rgba(255,255,255,.02);
+      background: var(--fill-input);
     }
     .upload-area:hover, .upload-area.dragover {
       border-color: var(--ac);
       background: var(--ac0);
     }
-    .upload-area i { font-size: 3.5rem; color: var(--ac2); margin-bottom: 1rem; }
+    .upload-area i { font-size: 3.5rem; color: var(--ac-txt); margin-bottom: 1rem; }
     .upload-area p { font-weight: 600; color: var(--tx); font-size: 1.1rem; }
     .upload-area small { color: var(--tx2); }
     .expiry-section { margin-bottom: 2rem; }
@@ -1043,7 +1111,7 @@ const HTML_UPLOAD = `<!DOCTYPE html>
     .expiry-options { display: flex; gap: 0.75rem; flex-wrap: wrap; }
     .expiry-option {
       flex: 1; min-width: 80px; padding: 0.7rem 1rem; border: 1px solid var(--ln);
-      border-radius: 999px; background: rgba(255,255,255,.035); cursor: pointer; text-align: center;
+      border-radius: 999px; background: var(--fill); cursor: pointer; text-align: center;
       transition: all 0.3s var(--e); font-weight: 600; color: var(--tx2);
     }
     .expiry-option:hover { border-color: var(--ac); background: var(--ac0); color: var(--tx); }
@@ -1054,13 +1122,13 @@ const HTML_UPLOAD = `<!DOCTYPE html>
     .file-list-container { margin-bottom: 1rem; }
     .file-item {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 0.75rem 1rem; background: rgba(255,255,255,.035); border-radius: 11px;
+      padding: 0.75rem 1rem; background: var(--fill); border-radius: 11px;
       margin-bottom: 0.5rem; gap: 1rem; border: 1px solid var(--ln);
       transition: all 0.2s var(--e);
     }
-    .file-item:hover { background: var(--glass-hv); border-color: var(--ln2); }
+    .file-item:hover { background: var(--fill-hv); border-color: var(--ln2); }
     .file-item-info { display: flex; align-items: center; gap: 0.75rem; flex: 1; overflow: hidden; }
-    .file-item-icon { font-size: 1.5rem; color: var(--ac2); min-width: 2rem; text-align: center; }
+    .file-item-icon { font-size: 1.5rem; color: var(--ac-txt); min-width: 2rem; text-align: center; }
     .file-item-name { font-weight: 600; word-break: break-word; color: var(--tx); }
     .file-item-size { color: var(--tx3); font-size: 0.85rem; white-space: nowrap; margin-left: auto; }
     .remove-btn {
@@ -1073,7 +1141,7 @@ const HTML_UPLOAD = `<!DOCTYPE html>
     .progress-container { margin: 1.5rem 0; display: none; }
     .progress-container.show { display: block; }
     .progress-bar-wrapper {
-      background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden; height: 0.6rem;
+      background: var(--fill-strong); border-radius: 999px; overflow: hidden; height: 0.6rem;
     }
     .progress-bar {
       width: 0%; height: 100%;
@@ -1081,7 +1149,7 @@ const HTML_UPLOAD = `<!DOCTYPE html>
       transition: width 0.4s ease;
       border-radius: 999px;
     }
-    .progress-text { text-align: center; margin-top: 0.5rem; font-weight: 600; color: var(--ac2); }
+    .progress-text { text-align: center; margin-top: 0.5rem; font-weight: 600; color: var(--ac-txt); }
     button.upload-btn {
       width: 100%; padding: 1rem;
       background: linear-gradient(135deg, #10b981, #059669);
@@ -1094,7 +1162,7 @@ const HTML_UPLOAD = `<!DOCTYPE html>
     button.upload-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
     .result {
       margin-top: 2rem; padding: 1.5rem; background: var(--ac0); border-radius: 14px;
-      display: none; border: 1px solid rgba(16,185,129,.25);
+      display: none; border: 1px solid var(--ac-ln);
     }
     .result.show { display: block; animation: fadeIn 0.4s ease; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -1104,7 +1172,7 @@ const HTML_UPLOAD = `<!DOCTYPE html>
     }
     .batch-url-row input {
       flex: 2; padding: 0.75rem 1rem; border: 1px solid var(--ln2); border-radius: 11px;
-      background: rgba(255,255,255,.04); font-size: 0.9rem; font-family: monospace; color: var(--tx);
+      background: var(--fill-input); font-size: 0.9rem; font-family: monospace; color: var(--tx);
     }
     .batch-url-row button {
       padding: 0.75rem 1.25rem; border-radius: 11px; font-weight: 600;
@@ -1113,16 +1181,16 @@ const HTML_UPLOAD = `<!DOCTYPE html>
     }
     .btn-copy { background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; }
     .btn-copy:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(16,185,129,.35); }
-    .btn-secondary { background: rgba(255,255,255,.06); color: var(--tx); border: 1px solid var(--ln); }
-    .btn-secondary:hover { background: rgba(255,255,255,.1); transform: translateY(-1px); }
+    .btn-secondary { background: var(--fill-strong); color: var(--tx); border: 1px solid var(--ln); }
+    .btn-secondary:hover { background: var(--fill-hv); transform: translateY(-1px); }
     .individual-files { margin-top: 1.5rem; }
     .ind-file-card {
       display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem;
-      background: rgba(255,255,255,.035); border: 1px solid var(--ln); border-radius: 11px;
+      background: var(--fill); border: 1px solid var(--ln); border-radius: 11px;
       margin-bottom: 0.5rem; flex-wrap: wrap; transition: all 0.2s var(--e);
     }
-    .ind-file-card:hover { border-color: var(--ln2); background: var(--glass-hv); }
-    .ind-file-icon { font-size: 1.75rem; color: var(--ac2); width: 2rem; text-align: center; }
+    .ind-file-card:hover { border-color: var(--ln2); background: var(--fill-hv); }
+    .ind-file-icon { font-size: 1.75rem; color: var(--ac-txt); width: 2rem; text-align: center; }
     .ind-file-info { flex: 1; min-width: 150px; }
     .ind-file-name { font-weight: 600; word-break: break-word; color: var(--tx); font-size: 0.9rem; }
     .ind-file-meta { font-size: 0.8rem; color: var(--tx3); }
@@ -1133,18 +1201,18 @@ const HTML_UPLOAD = `<!DOCTYPE html>
       transition: all 0.2s var(--e);
     }
     .ind-btn-copy { background: var(--ac); color: #ffffff; }
-    .ind-btn-view { background: var(--ac0); color: var(--ac2); border-color: rgba(16,185,129,.25); }
-    .ind-btn-raw { background: rgba(251,191,36,.07); color: var(--am); border-color: rgba(251,191,36,.25); }
-    .ind-btn-dl { background: rgba(96,165,250,.07); color: var(--bl); border-color: rgba(96,165,250,.25); }
-    .ind-btn-qr { background: rgba(167,139,250,.07); color: var(--vi); border-color: rgba(167,139,250,.25); }
+    .ind-btn-view { background: var(--ac0); color: var(--ac-txt); border-color: var(--ac-ln); }
+    .ind-btn-raw { background: rgba(251,191,36,.08); color: var(--am); border-color: rgba(217,119,6,.3); }
+    .ind-btn-dl { background: rgba(96,165,250,.08); color: var(--bl); border-color: rgba(37,99,235,.3); }
+    .ind-btn-qr { background: rgba(167,139,250,.08); color: var(--vi); border-color: rgba(124,58,237,.3); }
     .expiry-badge {
       display: inline-flex; align-items: center; gap: 0.5rem;
       background: var(--ac0); padding: 0.4rem 1rem; border-radius: 999px;
-      font-size: 0.85rem; font-weight: 600; color: var(--ac2); margin-top: 0.5rem;
-      border: 1px solid rgba(16,185,129,.25);
+      font-size: 0.85rem; font-weight: 600; color: var(--ac-txt); margin-top: 0.5rem;
+      border: 1px solid var(--ac-ln);
     }
     .error {
-      color: #fca5a5; background: var(--rd1); padding: 0.75rem 1rem; border-radius: 11px;
+      color: var(--err-tx); background: var(--rd1); padding: 0.75rem 1rem; border-radius: 11px;
       margin-top: 1rem; display: none; font-weight: 500; border: 1px solid rgba(248,113,113,.3);
     }
     .features {
@@ -1153,18 +1221,18 @@ const HTML_UPLOAD = `<!DOCTYPE html>
       color: var(--tx3); flex-wrap: wrap;
     }
     .features span { display: flex; align-items: center; gap: 0.4rem; }
-    .features i { color: var(--ac2); }
+    .features i { color: var(--ac-txt); }
     .qr-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
     .qr-modal.show { display: flex; }
     .qr-modal-content {
-      background: #14141c;
+      background: var(--surface);
       border: 1px solid var(--ln2);
       border-radius: 14px;
       padding: 2.5rem 2rem 2rem;
       text-align: center;
       max-width: 340px;
       width: 90%;
-      box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.3);
       position: relative;
       animation: slideUp 0.3s ease;
       color: var(--tx);
@@ -1172,15 +1240,15 @@ const HTML_UPLOAD = `<!DOCTYPE html>
     .qr-close-btn {
       position: absolute; top: 0.75rem; right: 0.75rem;
       width: 2rem; height: 2rem; border-radius: 50%;
-      background: rgba(255,255,255,0.06); border: none;
+      background: var(--fill-strong); border: none;
       font-size: 1.25rem; cursor: pointer; color: var(--tx2);
       display: flex; align-items: center; justify-content: center;
       transition: all 0.2s var(--e);
     }
-    .qr-close-btn:hover { background: rgba(255,255,255,0.12); color: var(--tx); }
+    .qr-close-btn:hover { background: var(--fill-hv); color: var(--tx); }
     .qr-title {
       font-size: 1.4rem; font-weight: 700;
-      background: linear-gradient(135deg, #34d399, #60a5fa);
+      background: linear-gradient(135deg, #10b981, #3b82f6);
       -webkit-background-clip: text; background-clip: text; color: transparent;
       margin-bottom: 0.25rem;
     }
@@ -1188,12 +1256,12 @@ const HTML_UPLOAD = `<!DOCTYPE html>
     #qrCodeContainer {
       display: inline-block; padding: 1rem;
       background: #ffffff; border-radius: 11px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
       margin: 0 auto 1rem;
     }
     #qrUrlLabel {
       word-break: break-all; font-size: 0.8rem;
-      color: var(--tx2); background: rgba(255,255,255,0.05);
+      color: var(--tx2); background: var(--fill-strong);
       padding: 0.5rem; border-radius: 9px;
       margin-top: 0.5rem;
     }
@@ -1202,7 +1270,7 @@ const HTML_UPLOAD = `<!DOCTYPE html>
     /* ---- Footer credit ---- */
     .credit {
       --credit-text: var(--tx3);
-      --credit-bg: rgba(255,255,255,0.05);
+      --credit-bg: var(--fill-strong);
       --credit-border: var(--ln);
       --credit-accent: var(--ac);
       --credit-on-accent: #ffffff;
@@ -1255,6 +1323,10 @@ const HTML_UPLOAD = `<!DOCTYPE html>
 <body>
 <div class="container">
   <div class="card">
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch between light and dark mode" title="Switch theme">
+      <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+      <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    </button>
     <h1><i class="fas fa-cloud-upload-alt"></i> FileShare</h1>
     <p class="subtitle">Drag & drop multiple files, set expiry, get a batch link and individual file links with QR codes</p>
 
@@ -1329,6 +1401,16 @@ const HTML_UPLOAD = `<!DOCTYPE html>
 </div>
 
 <script>
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  if (!btn) return;
+  btn.addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('fs_theme', next); } catch (e) {}
+  });
+})();
   (function() {
     const MAX_SIZE = 18 * 1024 * 1024;
     let selectedFiles = [];
